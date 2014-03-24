@@ -13,6 +13,7 @@ the License.
 import networkx
 import zipfile
 import tempfile
+import os
 
 import xml.etree.cElementTree as ElementTree
 from xml.etree.cElementTree import Element, SubElement, tostring
@@ -109,13 +110,19 @@ class Pymtgx(networkx.DiGraph):
 
     writer.xml.find('.//key[@attr.name="EntityRenderer"]').set('yfiles.type', "nodegraphics")
 
-    with tempfile.NamedTemporaryFile() as temp:
-      temp.write(str(writer).encode())
-      temp.flush()
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(str(writer).encode())
+    temp.flush()
 
-      zf = zipfile.ZipFile(path + '.mtgx', mode='w')
-      zf.write(temp.name, "Graphs/Graph1.graphml")
-      zf.close()
+    zf = zipfile.ZipFile(path + '.mtgx', mode='w')
+    zf.write(temp.name, "Graphs/Graph1.graphml")
+    zf.close()
+    
+    #done with temp file
+    try:
+        os.remove(temp.name)
+    except OSError:
+        pass
 
 class MaltegoEntity(object):
   def __init__(self, entityType, entity, value):		
